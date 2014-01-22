@@ -8,12 +8,7 @@
  * Description: Allows site admins to allow users login by email or user name or site admin can force users to login by email only.
  * License: GPL
  */
-/**
- * @todo Things I want to do
- *  - give site admins option in backend to choose between forced email login or optional email login
- *  - translate plugin
- *  - release on Buddydev/WP.org
- */
+
 class LoginByEmail{
     private static $instance;
     
@@ -23,8 +18,11 @@ class LoginByEmail{
         add_filter( 'gettext',          array( $this, 'filter_username_label' ), 10, 3 );
         add_filter( 'wp_login_errors',  array( $this, 'filter_errors' ), 10, 2 );
         
+        //Add setting option
+        add_filter('admin_init',        array( $this, 'register_settings' ) );
+        
         //load text domain
-        add_action ( 'bp_loaded',       array( $this, 'load_textdomain' ), 2 );
+        add_action ( 'wp_loaded',       array( $this, 'load_textdomain' ), 2 );
 
     }
     /**
@@ -41,7 +39,7 @@ class LoginByEmail{
      */
     public function load_textdomain(){
         
-         $locale = apply_filters( 'login-by-email_get_locale', get_locale() );
+         $locale = apply_filters( 'loginby-email_get_locale', get_locale() );
         
         // if load .mo file
         if ( !empty( $locale ) ) {
@@ -50,7 +48,7 @@ class LoginByEmail{
 
                 if (is_readable( $mofile ) ) 
                     // make sure file exists, and load it
-                    load_textdomain( 'login-by-email', $mofile );
+                    load_textdomain( 'loginbyemail', $mofile );
         }
        
     }
@@ -84,8 +82,7 @@ class LoginByEmail{
      * @return boolean
      */
     public function force_email_login(){
-        
-        return true;
+       return (boolean) get_option('logbyemali_force_email');
     }
 
 
@@ -111,7 +108,7 @@ class LoginByEmail{
      * @param type $redirect
      * @return type
      */
-    function filter_errors( $errors, $redirect ){
+    public function filter_errors( $errors, $redirect ){
 
 
      //if there is an error   
@@ -144,7 +141,22 @@ class LoginByEmail{
      }
 
      return $errors;
-    }    
-}
+    }   
+    
+    public function register_settings(){
+        
+        register_setting( 'general', 'logbyemali_force_email', 'esc_attr' );
+        
+        add_settings_field( 'logbyemali_force_email', '<label for="logbyemali_force_email">'.__( 'Forced user to login by email' , 'loginbyemail' ).'</label>' , array( $this,'settings_force_email_field' ), 'general' );
+
+    }
+
+    public function settings_force_email_field(){
+
+        $checked = get_option( 'logbyemali_force_email', 0 );
+        
+        echo '<input type="checkbox" id="logbyemali_force_email" name="logbyemali_force_email" value="1"'. checked( $checked, 1, false ).' />';
+     }
+ }
 
 LoginByEmail::get_instance();
