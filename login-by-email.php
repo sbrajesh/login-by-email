@@ -18,10 +18,13 @@ class LoginByEmail{
     private static $instance;
     
     private function __construct() {
-        add_filter( 'authenticate', array( $this, 'authenticate_by_email' ), 20, 3 );
+        add_filter( 'authenticate',     array( $this, 'authenticate_by_email' ), 20, 3 );
         //filter username field to say username/email
-        add_filter( 'gettext', array( $this, 'filter_username_label' ), 10, 3 );
-        add_filter( 'wp_login_errors', array( $this, 'filter_errors' ), 10, 2 );
+        add_filter( 'gettext',          array( $this, 'filter_username_label' ), 10, 3 );
+        add_filter( 'wp_login_errors',  array( $this, 'filter_errors' ), 10, 2 );
+        
+        //load text domain
+        add_action ( 'bp_loaded',       array( $this, 'load_textdomain' ), 2 );
 
     }
     /**
@@ -32,6 +35,24 @@ class LoginByEmail{
         if( !isset( self::$instance ) )
             self::$instance = new self();
         return self::$instance;
+    }
+    /**
+     * Load plugin textdomain for translation
+     */
+    public function load_textdomain(){
+        
+         $locale = apply_filters( 'login-by-email_get_locale', get_locale() );
+        
+        // if load .mo file
+        if ( !empty( $locale ) ) {
+            $mofile_default = sprintf( '%slanguages/%s.mo', plugin_dir_path(__FILE__), $locale );
+            $mofile = apply_filters( 'login-by-email_load_textdomain_mofile', $mofile_default );
+
+                if (is_readable( $mofile ) ) 
+                    // make sure file exists, and load it
+                    load_textdomain( 'login-by-email', $mofile );
+        }
+       
     }
     
     public function authenticate_by_email( $user, $username, $password ) {
@@ -127,4 +148,3 @@ class LoginByEmail{
 }
 
 LoginByEmail::get_instance();
-
