@@ -19,10 +19,10 @@ class LoginByEmail{
         add_filter( 'wp_login_errors',  array( $this, 'filter_errors' ), 10, 2 );
         
         //Add setting option
-        add_filter('admin_init',        array( $this, 'register_settings' ) );
+        add_filter( 'admin_init',        array( $this, 'register_settings' ) );
         
         //load text domain
-        add_action ( 'wp_loaded',       array( $this, 'load_textdomain' ), 2 );
+        add_action ( 'init',       array( $this, 'load_textdomain' ), 2 );
 
     }
     /**
@@ -56,7 +56,7 @@ class LoginByEmail{
     public function authenticate_by_email( $user, $username, $password ) {
         //if it is email only system, let us check for the username
            if( $this->force_email_login() && $username && !is_email( $username ) ) {
-               $user = new WP_Error('invalid_username', __('Please enter a valid email!', 'loginbyemail' ) );
+               $user = new WP_Error( 'invalid_username', __( 'Please enter a valid email!', 'loginbyemail' ) );
                return $user;
            }
            //if we are here, the username is  is given
@@ -82,7 +82,7 @@ class LoginByEmail{
      * @return boolean
      */
     public function force_email_login(){
-       return (boolean) get_option('logbyemali_force_email');
+       return (boolean) get_option( 'loginbyemail_force_email' );
     }
 
 
@@ -90,7 +90,7 @@ class LoginByEmail{
         global $pagenow;
 
         //we are filtering username label only on wp-login.php, don't want to mess other places
-        if( $text=== 'Username' && $pagenow == 'wp-login.php' ){
+        if( $text=== 'Username' && !is_admin() ) {//or rather we should filter Username on eeverything non admin? or may be $pagenow == 'wp-login.php' 
          
             if( $this->force_email_login() )
                 $translation = __( 'Email', 'loginbyemail' );
@@ -132,7 +132,7 @@ class LoginByEmail{
         //we only need to correct the invalid password/empty username issue
         if( $errors->get_error_message( 'incorrect_password' ) ){
             unset( $errors->errors['incorrect_password'] );
-            $errors->add('incorrect_password', sprintf( __( '<strong>ERROR</strong>: The password you entered for the email <strong>%1$s</strong> is incorrect. <a href="%2$s" title="Password Lost and Found">Lost your password</a>?', 'loginbyemail' ), $email, wp_lostpassword_url() ));
+            $errors->add('incorrect_password', sprintf( __( '<strong>ERROR</strong>: The password you entered for the email <strong>%1$s</strong> is incorrect. <a href="%2$s" title="Password Lost and Found">Lost your password</a>?', 'loginbyemail' ), $email, wp_lostpassword_url() ) );
 
         }
          
@@ -145,17 +145,17 @@ class LoginByEmail{
     
     public function register_settings(){
         
-        register_setting( 'general', 'logbyemali_force_email', 'esc_attr' );
+        register_setting( 'general', 'loginbyemail_force_email', 'esc_attr' );
         
-        add_settings_field( 'logbyemali_force_email', '<label for="logbyemali_force_email">'.__( 'Forced user to login by email' , 'loginbyemail' ).'</label>' , array( $this,'settings_force_email_field' ), 'general' );
+        add_settings_field( 'loginbyemail_force_email', '<label for="loginbyemail_force_email">'.__( 'Forced user to login by email' , 'loginbyemail' ).'</label>' , array( $this,'settings_force_email_field' ), 'general' );
 
     }
 
     public function settings_force_email_field(){
 
-        $checked = get_option( 'logbyemali_force_email', 0 );
+        $checked = get_option( 'loginbyemail_force_email', 0 );
         
-        echo '<input type="checkbox" id="logbyemali_force_email" name="logbyemali_force_email" value="1"'. checked( $checked, 1, false ).' />';
+        echo '<input type="checkbox" id="loginbyemail_force_email" name="loginbyemail_force_email" value="1"'. checked( $checked, 1, false ).' />';
      }
  }
 
