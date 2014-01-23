@@ -82,7 +82,7 @@ class LoginByEmail{
      * @return boolean
      */
     public function force_email_login(){
-       return (boolean) get_option( 'loginbyemail_force_email' );
+       return apply_filters( 'loginbyemail_force_email_login', (boolean) get_option( 'loginbyemail_force_email' ) );
     }
 
 
