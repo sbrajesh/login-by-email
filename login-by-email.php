@@ -69,7 +69,7 @@ class LoginByEmail{
                     return new WP_Error( 'invalid_username', __( 'There does not exist an account with this email!', 'loginbyemail' ) );
               
                 
-                if(  $user && isset( $user->user_login) ) 
+                if(  $user && isset( $user->user_login ) ) 
                     $username = $user->user_login;
                 
             }  
@@ -124,7 +124,7 @@ class LoginByEmail{
         }
 
         //let us check if it was caused by email
-        $email = $_POST['log'];
+        $email = isset( $_POST['log'] ) ? $_POST['log'] : '';
         if( !is_email( $email ) )
             return $errors;
 
